@@ -1,0 +1,30 @@
+NAME
+    CPAN::Unpack - Unpack CPAN distributions
+
+SYNOPSIS
+      use CPAN::Unpack;
+      my $u = CPAN::Unpack->new;
+      $u->cpan("t/cpan/");
+      $u->destination("t/unpacked/");
+      $u->unpack;
+
+DESCRIPTION
+    The Comprehensive Perl Archive Network (CPAN) is a very useful
+    collection of Perl code. It has a whole lot of module distributions.
+    This module unpacks the latest version of each distribution.
+
+    This can be handy for code metrics, searching CPAN, or just being very
+    nosy indeed.
+
+    This uses Parse::CPAN::Packages' latest_distributions method for finding
+    the latest distribution.
+
+AUTHOR
+    Leon Brocard <acme@astray.com>
+
+COPYRIGHT
+    Copyright (C) 2004, Leon Brocard
+
+    This module is free software; you can redistribute it or modify it under
+    the same terms as Perl itself.
+

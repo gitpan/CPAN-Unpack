@@ -1,0 +1,20 @@
+--- #YAML:1.0
+name: CPAN-Unpack
+version: 0.21
+author:
+  - Leon Brocard <acme@astray.com>
+abstract: Unpack CPAN distributions
+license: perl
+requires:
+  Archive::Extract: 0
+  Archive::Tar: 0
+  Archive::Zip: 0
+  Class::Accessor::Chained: 0
+  IO::Zlib: 0
+  Parse::CPAN::Packages: 2.21
+  Test::More: 0
+provides:
+  CPAN::Unpack:
+    file: lib/CPAN/Unpack.pm
+    version: 0.21
+generated_by: Module::Build version 0.25
