@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: CPAN-Unpack
-version: 0.21
+version: 0.22
 author:
   - Leon Brocard <acme@astray.com>
 abstract: Unpack CPAN distributions
@@ -16,5 +16,5 @@ requires:
 provides:
   CPAN::Unpack:
     file: lib/CPAN/Unpack.pm
-    version: 0.21
-generated_by: Module::Build version 0.25
+    version: 0.22
+generated_by: Module::Build version 0.23

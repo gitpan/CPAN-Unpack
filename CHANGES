@@ -1,4 +1,7 @@
 CHANGES file for CPAN::Unpack
 
+0.22 Fri Jul  2 15:14:41 IST 2004
+  - tell Archive::Extract to prefer using binaries
+
 0.21 Wed Jun 30 11:16:49 BST 2004
   - first release

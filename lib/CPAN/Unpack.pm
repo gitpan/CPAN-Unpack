@@ -6,8 +6,9 @@ use File::Path;
 use Parse::CPAN::Packages;
 use base qw(Class::Accessor);
 __PACKAGE__->mk_accessors(qw(cpan destination));
+$Archive::Extract::PREFER_BIN = 1;
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 sub new {
   my $class = shift;
@@ -36,7 +37,11 @@ sub unpack {
     next if -d $want;
 
     my $archive_filename = "$cpan/authors/id/" . $distribution->prefix;
-    die "No $archive_filename" unless -f $archive_filename;
+
+    unless (-f $archive_filename) {
+	warn "No $archive_filename";
+	next;
+    }
 
     my $extract = Archive::Extract->new(archive => $archive_filename);
     my $to = "$destination/test";
