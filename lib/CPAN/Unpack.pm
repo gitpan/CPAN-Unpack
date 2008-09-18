@@ -8,7 +8,7 @@ use base qw(Class::Accessor);
 __PACKAGE__->mk_accessors(qw(cpan destination));
 $Archive::Extract::PREFER_BIN = 1;
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 sub new {
   my $class = shift;
@@ -103,7 +103,9 @@ Leon Brocard <acme@astray.com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2004, Leon Brocard
+Copyright (C) 2004-8, Leon Brocard
+
+=head1 LICENSE
 
 This module is free software; you can redistribute it or modify it under
 the same terms as Perl itself.

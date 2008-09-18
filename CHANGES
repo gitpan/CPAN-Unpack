@@ -1,5 +1,10 @@
 CHANGES file for CPAN::Unpack
 
+0.23 Thu Sep 18 17:19:28 BST 2008
+  - move from Module::Build to ExtUtils::MakeMaker
+  - add human-readable license
+  - add Pod test
+
 0.22 Fri Jul  2 15:14:41 IST 2004
   - tell Archive::Extract to prefer using binaries
 
