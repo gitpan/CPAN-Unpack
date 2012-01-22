@@ -1,20 +1,29 @@
---- #YAML:1.0
-name:                CPAN-Unpack
-version:             0.23
-abstract:            Unpack CPAN distributions
-license:             perl
-author:              
-    - Leon Brocard <acme@astray.com>
-generated_by:        ExtUtils::MakeMaker version 6.44
-distribution_type:   module
-requires:     
-    Archive::Extract:              0
-    Archive::Tar:                  0
-    Archive::Zip:                  0
-    Class::Accessor::Chained:      0
-    IO::Zlib:                      0
-    Parse::CPAN::Packages:         2.21
-    Test::More:                    0
+---
+abstract: 'Unpack CPAN distributions'
+author:
+  - 'Leon Brocard <acme@astray.com>'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.59, CPAN::Meta::Converter version 2.112150'
+license: perl
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: CPAN-Unpack
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Archive::Extract: 0
+  Archive::Tar: 0
+  Archive::Zip: 0
+  Class::Accessor::Chained: 0
+  IO::Zlib: 0
+  Parse::CPAN::Packages::Fast: 0.04
+  Test::More: 0
+  YAML::Any: 0
+version: 0.30

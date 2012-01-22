@@ -2,62 +2,137 @@ package CPAN::Unpack;
 use strict;
 use warnings;
 use Archive::Extract;
+use Fcntl qw(:mode);
+use File::Basename qw(basename);
+use File::Find;
 use File::Path;
-use Parse::CPAN::Packages;
+use Parse::CPAN::Packages::Fast;
+use YAML::Any ();
 use base qw(Class::Accessor);
-__PACKAGE__->mk_accessors(qw(cpan destination));
+__PACKAGE__->mk_accessors(qw(cpan destination quiet));
 $Archive::Extract::PREFER_BIN = 1;
 
-our $VERSION = '0.23';
+our $VERSION = '0.30';
 
 sub new {
-  my $class = shift;
-  my $self = {};
-  bless $self, $class;
-  return $self;
+    my $class = shift;
+    my $self  = {};
+    bless $self, $class;
+    return $self;
 }
 
 sub unpack {
-  my $self = shift;
+    my $self    = shift;
+    my $counter = 0;
 
-  my $cpan = $self->cpan;
-  die "No $cpan" unless -d $cpan;
+    my $cpan = $self->cpan;
+    die "No $cpan" unless -d $cpan;
 
-  my $destination = $self->destination;
-  mkdir $destination;
-  die "No $destination" unless -d $destination;
+    my $destination = $self->destination;
+    mkdir $destination;
+    die "No $destination" unless -d $destination;
 
-  my $packages_filename = "$cpan/modules/02packages.details.txt.gz";
-  die "No packages at $packages_filename" unless -f $packages_filename;
+    my $packages_filename = "$cpan/modules/02packages.details.txt.gz";
+    die "No packages at $packages_filename" unless -f $packages_filename;
 
-  my $p = Parse::CPAN::Packages->new($packages_filename);
-  foreach my $distribution ($p->latest_distributions) {
-    print "About to do " . $distribution->prefix . "\n";
-    my $want = "$destination/" . $distribution->dist;
-    next if -d $want;
-
-    my $archive_filename = "$cpan/authors/id/" . $distribution->prefix;
-
-    unless (-f $archive_filename) {
-	warn "No $archive_filename";
-	next;
+    my %unpacked_versions;
+    if ( -e "$destination/unpacked_versions.yml" ) {
+        local $/;
+        open( my $fh, "<", "$destination/unpacked_versions.yml" );
+        %unpacked_versions = %{ YAML::Any::Load(<$fh>) };
+        close $fh;
     }
 
-    my $extract = Archive::Extract->new(archive => $archive_filename);
-    my $to = "$destination/test";
-    rmtree($to);
-    mkdir($to);
-    $extract->extract(to => $to);
-    my @files = <$to/*>;
-    my $files = @files;
-    if ($files == 1) {
-      my $file = $files[0];
-      rename $file, $want;
-      rmdir $to;
-    } else {
-      rename $to, $want;
+    sub fixme {
+        my $path = $_;
+        my $mode = ( stat($path) )[2];
+        if ( S_ISDIR($mode) ) {
+            chmod( ( S_IMODE($mode) | S_IRWXU ), $path )
+                unless ( ( $mode & S_IRWXU ) == S_IRWXU );
+        }
     }
-  }
+    my $p = Parse::CPAN::Packages::Fast->new($packages_filename);
+    foreach my $distribution ( $p->latest_distributions ) {
+        $counter++;
+        my $want             = "$destination/" . $distribution->dist;
+        my $archive_filename = "$cpan/authors/id/" . $distribution->prefix;
+
+        unless ( -f $archive_filename ) {
+            warn "Archive $archive_filename not found";
+            next;
+        }
+
+        my $unpacked = $unpacked_versions{ $distribution->dist };
+
+        if ( !defined( $distribution->version ) ) {
+
+       # This is a bug in Parse::CPAN::Packages (and ::Fast). It affects a few
+       # dozen packages, so use the mtime as version
+            $unpacked_versions{ $distribution->dist }
+                = "x" . ( stat $archive_filename )[9];
+        } else {
+            $unpacked_versions{ $distribution->dist }
+                = "x" . $distribution->version;
+        }
+
+        if ( defined($unpacked)
+            && $unpacked eq $unpacked_versions{ $distribution->dist } )
+        {
+            print "Skipping " . $distribution->prefix . " ($counter)\n"
+                unless $self->quiet;
+            next;
+        }
+
+        if ( -d $want ) {
+            print "Deleting old version of " . $distribution->dist . "\n"
+                unless $self->quiet;
+            rmtree "$destination/$want";
+        }
+
+        print "Unpacking " . $distribution->prefix . " ($counter)\n"
+            unless $self->quiet;
+
+        my $extract = Archive::Extract->new( archive => $archive_filename );
+        my $to = "$destination/test";
+        rmtree($to);
+        mkdir($to);
+        $extract->extract( to => $to );
+
+        # Fix up broken permissions
+        File::Find::find( { wanted => \&fixme, follow => 0, no_chdir => 1 },
+            $to );
+
+        my @files = <$to/*>;
+        my $files = @files;
+        if ( $files == 1 ) {
+            my $file = $files[0];
+            if ( S_ISDIR( stat($file) ) ) {
+                rename $file, $want;
+            } else {
+                mkdir $want;
+                rename $file, "$want/" . basename($file);
+            }
+            rmdir $to;
+        } else {
+            rename $to, $want;
+        }
+
+        unless ( $counter % 500 ) {
+
+           # Write this every now and then to prevent ^C from killing the list
+            open( my $fh, ">", "$destination/unpacked_versions.yml.tmp" );
+            print $fh YAML::Any::Dump( \%unpacked_versions );
+            close $fh;
+            rename "$destination/unpacked_versions.yml.tmp",
+                "$destination/unpacked_versions.yml";
+        }
+    }
+
+    open( my $fh, ">", "$destination/unpacked_versions.yml.tmp" );
+    print $fh YAML::Any::Dump( \%unpacked_versions );
+    close $fh;
+    rename "$destination/unpacked_versions.yml.tmp",
+        "$destination/unpacked_versions.yml";
 }
 
 __END__
@@ -72,6 +147,7 @@ CPAN::Unpack - Unpack CPAN distributions
   my $u = CPAN::Unpack->new;
   $u->cpan("path/to/CPAN/");
   $u->destination("cpan_unpacked/");
+  $u->quiet(1);
   $u->unpack;
 
 =head1 DESCRIPTION
@@ -94,7 +170,7 @@ another 1.6G.
 This can be handy for code metrics, searching CPAN, or just being very
 nosy indeed.
 
-This uses Parse::CPAN::Packages' latest_distributions method for
+This uses Parse::CPAN::Packages::Fast's latest_distributions method for
 finding the latest distribution.
 
 =head1 AUTHOR
@@ -104,6 +180,7 @@ Leon Brocard <acme@astray.com>
 =head1 COPYRIGHT
 
 Copyright (C) 2004-8, Leon Brocard
+              2012, Dennis Kaarsemaker
 
 =head1 LICENSE
 

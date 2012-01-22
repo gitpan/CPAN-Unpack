@@ -6,6 +6,7 @@ SYNOPSIS
       my $u = CPAN::Unpack->new;
       $u->cpan("path/to/CPAN/");
       $u->destination("cpan_unpacked/");
+      $u->quiet(1);
       $u->unpack;
 
 DESCRIPTION
@@ -27,14 +28,15 @@ DESCRIPTION
     This can be handy for code metrics, searching CPAN, or just being very
     nosy indeed.
 
-    This uses Parse::CPAN::Packages' latest_distributions method for finding
-    the latest distribution.
+    This uses Parse::CPAN::Packages::Fast's latest_distributions method for
+    finding the latest distribution.
 
 AUTHOR
     Leon Brocard <acme@astray.com>
 
 COPYRIGHT
-    Copyright (C) 2004, Leon Brocard
+    Copyright (C) 2004-8, Leon Brocard
+                  2012, Dennis Kaarsemaker
 
     This module is free software; you can redistribute it or modify it under
     the same terms as Perl itself.
