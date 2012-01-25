@@ -26,4 +26,4 @@ requires:
   Parse::CPAN::Packages::Fast: 0.04
   Test::More: 0
   YAML::Any: 0
-version: 0.30
+version: 0.31

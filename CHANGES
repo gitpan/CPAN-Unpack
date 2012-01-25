@@ -1,5 +1,8 @@
 CHANGES file for CPAN::Unpack
 
+0.31 Wed Jan 25 20:15:41 GMT 2012
+  - Fixes from Dennis Kaarsemaker for the path
+
 0.30 Fri Jan 20 10:27:08 CET 2011
   - Keep a list of unpacked versions so we know which ones to reextract
   - Support single-file distros

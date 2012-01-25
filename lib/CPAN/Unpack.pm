@@ -12,7 +12,7 @@ use base qw(Class::Accessor);
 __PACKAGE__->mk_accessors(qw(cpan destination quiet));
 $Archive::Extract::PREFER_BIN = 1;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 sub new {
     my $class = shift;
@@ -76,17 +76,16 @@ sub unpack {
         }
 
         if ( defined($unpacked)
-            && $unpacked eq $unpacked_versions{ $distribution->dist } )
+            && $unpacked eq $unpacked_versions{ $distribution->dist } 
+            && -d $want )
         {
-            print "Skipping " . $distribution->prefix . " ($counter)\n"
-                unless $self->quiet;
             next;
         }
 
         if ( -d $want ) {
             print "Deleting old version of " . $distribution->dist . "\n"
                 unless $self->quiet;
-            rmtree "$destination/$want";
+            rmtree $want;
         }
 
         print "Unpacking " . $distribution->prefix . " ($counter)\n"
@@ -106,7 +105,7 @@ sub unpack {
         my $files = @files;
         if ( $files == 1 ) {
             my $file = $files[0];
-            if ( S_ISDIR( stat($file) ) ) {
+            if ( S_ISDIR( ( stat( $file ) )[2] ) ) {
                 rename $file, $want;
             } else {
                 mkdir $want;
